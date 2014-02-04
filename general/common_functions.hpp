@@ -1,6 +1,5 @@
 /*
-* Copyright (C) 2012-2013 - Adam Streck
-* Independent headers for software development.
+* Copyright (C) 2012-2014 - Adam Streck
 */
 #ifndef COMMON_FUNCTIONS_HPP
 #define COMMON_FUNCTIONS_HPP

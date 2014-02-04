@@ -1,6 +1,11 @@
+/*
+* Copyright (C) 2012-2014 - Adam Streck
+*/
+
+#include <iostream>
+#include <fstream>
 #include <vector>
-#include <chrono>
-#include <random>
+#include <regex>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/any_range.hpp>
@@ -17,4 +22,4 @@ namespace rng = boost::range;
 namespace bfs = boost::filesystem;
 using namespace std;
 
-const string MODEL_EXTENSION(".pan"); ///< Post's algebra network
+const string MODEL_EXTENSION(".pasn"); ///< Post's algebra network
