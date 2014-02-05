@@ -2,7 +2,7 @@
 ## Program specific
 ###################
 *.pasn
-
+*.csv
 
 #################
 ## Visual Studio

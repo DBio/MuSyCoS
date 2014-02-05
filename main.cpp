@@ -71,7 +71,7 @@ SpaceSolver<SpaceType> initiateSolver(const Model & model) {
 }
 
 int main(int argc, char ** argv) {
-	bpo::variables_map  program_options;
+	bpo::variables_map program_options;
 	string path_to_model;
 	try {
 		program_options = parseProgramOptions(argc, argv);
@@ -104,11 +104,17 @@ int main(int argc, char ** argv) {
 
 	try {
 		if (program_options.count("steady")) {
+			bfs::path model_path(path_to_model);
+			string output_file_name = model_path.parent_path().string() + model_path.stem().string() + "_stable.csv";
+			ofstream output_file(output_file_name, ios::out);
+			rng::for_each(model.species, [&output_file](Specie spec){output_file << spec.name << ","; });
+			output_file << endl;
+
 			auto solver = initiateSolver<SteadySpace>(model);
 			vector<int> result;
 			while (!(result = solver.next()).empty()) {
-				rng::for_each(result, [](int i){cout << i << " "; });
-				cout << endl;
+				rng::for_each(result, [&output_file](int i){output_file << i << ","; });
+				output_file << endl;
 			}
 		}
 	}
