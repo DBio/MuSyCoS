@@ -7,18 +7,17 @@
 #include "model.hpp"
 
 namespace ModelParsers {
-	const string spec_name("[:alpha:](\\w)*");
+	const string spec_name("[[:alpha:]](\\w)*");
 	const string assign("'=");
-	const string ext_literal(spec_name + "(\\{\\d+\\})?");
+	const string ext_literal(spec_name + "(\\{\\d+(,\\d+)*\\})?");
 	const string clause("(\\d*\\*)?" + ext_literal + "(\\*" + ext_literal + ")*");
 	const string rule(spec_name + assign + clause + "(\\+" + clause + ")*");
 
 	void control_syntax(const vector<string> & lines) {
-		rng::for_each(lines, [](string line){
-			line.erase(rng::remove_if(line, isspace), line.end());
-			if (!regex_match(line, regex(rule))) 
-				throw runtime_error("Invalid format of the line \"" + line + "\"");
-		});
+		regex control{ rule };
+		for (const size_t i : crange(0u, lines.size())) 
+			if (!regex_match(lines[i], control))
+				throw runtime_error("Line " + to_string(i) + ": invalid format \"" + lines[i] + "\"");
 	}
 
 	Specie obtainSpecie(string line) {

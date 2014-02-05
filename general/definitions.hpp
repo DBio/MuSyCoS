@@ -8,7 +8,7 @@
 #include <regex>
 
 #include <boost/range/algorithm.hpp>
-#include <boost/range/any_range.hpp>
+#include <boost/range/counting_range.hpp>
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/filesystem.hpp>
