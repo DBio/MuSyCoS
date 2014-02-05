@@ -6,6 +6,7 @@
 #include <fstream>
 #include <vector>
 #include <regex>
+#include <limits>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/counting_range.hpp>
