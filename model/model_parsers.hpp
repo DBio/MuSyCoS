@@ -47,23 +47,30 @@ namespace ModelParsers {
 		return{ match_name[0].str(), findMaxNumLiteral(line), match_rule[1].str() };
 	}
 
+	const Specie& testName(const vector<Specie> & species, const string & current_specie) {
+		auto tested = rng::find_if(species, [&current_specie](const Specie & spec) {return spec.name.compare(current_specie) == 0; });
+		if (tested == species.end())
+			throw runtime_error("Specie \"" + current_specie + "\" not found on the left side.");
+		else
+			return *tested;
+	}
+
+	void testValues(const Specie & tested, string values_set) {
+		smatch match_numbers;
+		while (regex_search(values_set, match_numbers, regex("\\d+"))) {
+			if (stoi(match_numbers[0]) > tested.max_val)
+				throw runtime_error("Value " + match_numbers[0].str() + " is greater than maximal derived value of the specie " + tested.name);
+			values_set = match_numbers.suffix().str();
+		}
+	}
+
 	void control_semantics(const vector<Specie> & species) {
 		for (const Specie specie : species) {
 			string specie_rule = specie.rule;
 			smatch match_clauses;
 			while (regex_search(specie_rule, match_clauses, regex(ext_literal_form))) {
-				string current_specie = match_clauses[1];
-				auto tested = rng::find_if(species, [&current_specie](const Specie & spec) {return spec.name.compare(current_specie) == 0; });
-				if (tested == species.end())
-					throw runtime_error("Specie \"" + current_specie + "\" not found in the rule \"" + specie.rule + "\"");
-
-				smatch match_numbers;
-				string current_numbers = match_clauses[2];
-				while (regex_search(current_numbers, match_numbers, regex("\\d+"))) {
-					if (stoi(match_numbers[0]) > tested->max_val)
-						throw invalid_argument("Value " + match_numbers[0].str() + " is greater than maximal derived value of the specie " + tested->name);
-					current_numbers = match_numbers.suffix().str();
-				}
+				Specie tested = testName(species, match_clauses[1]);
+				testValues(tested, match_clauses[2]);
 				specie_rule = match_clauses.suffix().str();
 			}
 		}
