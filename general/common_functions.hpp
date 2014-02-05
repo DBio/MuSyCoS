@@ -1,15 +1,13 @@
 /*
 * Copyright (C) 2012-2014 - Adam Streck
 */
-#ifndef COMMON_FUNCTIONS_HPP
-#define COMMON_FUNCTIONS_HPP
-
+#pragma once
 #include "definitions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @file A handful of handy functions.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-namespace Common {
+namespace CommonFunctions {
 	/**
 	* @brief renaming for boost::counting_range
 	* @param[in] begin  first number in the range
@@ -104,7 +102,7 @@ namespace Common {
 		}
 		return true;
 	}
-} using namespace Common;
+} using namespace CommonFunctions;
 
 #define NO_COPY(TypeName) \
 	TypeName() = default;  \
@@ -120,5 +118,3 @@ namespace Common {
 #define DEFAULT_MOVE(TypeName) \
 	TypeName(TypeName && ) = default;  \
 	TypeName& operator=(TypeName && ) = default; 
-
-#endif // COMMON_FUNCTIONS_HPP

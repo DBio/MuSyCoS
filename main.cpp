@@ -1,5 +1,7 @@
 #include "model/model.hpp"
 #include "model/model_parsers.hpp"
+#include "constraints/steady_space.hpp"
+#include "constraints/space_solver.hpp"
 
 /* Parse the program options - if help or version is required, terminate the program immediatelly. */
 bpo::variables_map parseProgramOptions(int argc, char ** argv) {
@@ -10,6 +12,7 @@ bpo::variables_map parseProgramOptions(int argc, char ** argv) {
 	visible.add_options()
 		("help,h", "display help")
 		("version,v", "display version")
+		("steady,s", "compute steady states")
 		;
 	bpo::options_description invisible;
 	invisible.add_options()
@@ -57,20 +60,31 @@ vector<string> readModel(const bfs::path & path) {
 	return result;
 }
 
+template <typename SpaceType>
+SpaceSolver<SpaceType> initiateSolver(const Model & model) {
+	SpaceSolver<SpaceType> result(new SteadySpace(model.species.size(), model.max_value));
+
+	for (const size_t i : cscope(model.species))
+		result->boundSpecie(i, model.species[i].max_val);
+
+	return result;
+}
+
 int main(int argc, char ** argv) {
-	string model_path;
+	bpo::variables_map  program_options;
+	string path_to_model;
 	try {
-		auto program_options = parseProgramOptions(argc, argv);
-		model_path = program_options["model"].as<string>();
+		program_options = parseProgramOptions(argc, argv);
+		path_to_model = program_options["model"].as<string>();
 	}
 	catch (exception & e) {
-		BOOST_LOG_TRIVIAL(error) << "An exception cought while parsing input options: " << e.what();
+		BOOST_LOG_TRIVIAL(error) << "An exception occurred while parsing input options: " << e.what();
 		exit(1);
 	}
 	
 	Model model;
 	try {
-		bfs::path model_path(model_path);
+		bfs::path model_path(path_to_model);
 		testPath(model_path);
 
 		model.name = model_path.stem().string();
@@ -80,9 +94,26 @@ int main(int argc, char ** argv) {
 		model.species.resize(model_content.size());
 		rng::transform(model_content, model.species.begin(), ModelParsers::obtainSpecie);
 		ModelParsers::control_semantics(model.species);
+
+		model.max_value = rng::max_element(model.species, [](Specie & a, Specie & b) {return a.max_val < b.max_val; })->max_val;
 	}
 	catch (exception & e) {
-		BOOST_LOG_TRIVIAL(error) << "An exception cought while reading the model file \"" << model_path << "\":" << e.what();
+		BOOST_LOG_TRIVIAL(error) << "An exception occurred while reading the model file \"" << path_to_model << "\":" << e.what();
+		exit(2);
+	}
+
+	try {
+		if (program_options.count("steady")) {
+			auto solver = initiateSolver<SteadySpace>(model);
+			vector<int> result;
+			while (!(result = solver.next()).empty()) {
+				rng::for_each(result, [](int i){cout << i << " "; });
+				cout << endl;
+			}
+		}
+	}
+	catch (exception & e) {
+		BOOST_LOG_TRIVIAL(error) << "An exception occurred while computing the steady states: " << e.what();
 		exit(2);
 	}
 

@@ -1,6 +1,7 @@
 /*
 * Copyright (C) 2012-2014 - Adam Streck
 */
+#pragma once
 
 #include <iostream>
 #include <fstream>

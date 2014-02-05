@@ -1,9 +1,7 @@
 /*
 * Copyright (C) 2012-2014 - Adam Streck
 */
-#ifndef MODEL_PARSERS_HPP
-#define MODEL_PARSERS_HPP
-
+#pragma once
 #include "model.hpp"
 
 // @brief A namespace contaning functions that both control and read the input. All the controls are based on regular expressions.
@@ -89,5 +87,3 @@ namespace ModelParsers {
 		}
 	}
 };
-
-#endif
