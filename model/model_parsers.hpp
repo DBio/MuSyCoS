@@ -81,4 +81,29 @@ namespace ModelParsers {
 			}
 		}
 	}
+
+	/* Throw an exception if the specified model file either does not exist or does not have the required suffix. */
+	void testPath(const bfs::path & path) {
+		if (!bfs::exists(path))
+			throw runtime_error("file does not exist");
+		bfs::path model_extension = path.extension();
+		if (model_extension.string() != MODEL_EXTENSION)
+			throw runtime_error("suffix must be " + MODEL_EXTENSION);
+	}
+
+	/* Read the contents of the model file. */
+	vector<string> readModel(const bfs::path & path) {
+		vector<string> result;
+
+		ifstream model_file(path.string(), ios::in);
+		string line;
+		while (getline(model_file, line)) {
+			if (line.empty())
+				throw runtime_error("an empty line encountered, no empty lines allowed");
+			result.push_back(line);
+		}
+
+		return result;
+	}
+
 };
