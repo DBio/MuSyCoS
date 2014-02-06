@@ -14,6 +14,7 @@
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <gecode/int.hh>
 #include <gecode/driver.hh>
@@ -25,3 +26,4 @@ namespace bfs = boost::filesystem;
 using namespace std;
 
 const string MODEL_EXTENSION(".pasn"); ///< Post's algebra network
+const size_t INF = numeric_limits<size_t>::max();

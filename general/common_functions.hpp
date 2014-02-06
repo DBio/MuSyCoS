@@ -102,6 +102,18 @@ namespace CommonFunctions {
 		}
 		return true;
 	}
+
+	vector<string> getAllMatches(const string & control_regex, string source, int n = 0) {
+		vector<string> result;
+
+		smatch matches;
+		while (regex_search(source, matches, regex(control_regex))) {
+			result.emplace_back(matches[n]); // Capture the first (and only) submatch that holds the whole number only
+			source = matches.suffix().str();
+		}
+
+		return result;
+	}
 } using namespace CommonFunctions;
 
 #define NO_COPY(TypeName) \

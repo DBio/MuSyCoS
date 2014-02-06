@@ -2,47 +2,13 @@
 #include "model/model_parsers.hpp"
 #include "constraints/steady_space.hpp"
 #include "constraints/space_solver.hpp"
-
-/* Parse the program options - if help or version is required, terminate the program immediatelly. */
-bpo::variables_map parseProgramOptions(int argc, char ** argv) {
-	bpo::variables_map result;
-	
-	// Declare the supbported options.
-	bpo::options_description visible("Execution options");
-	visible.add_options()
-		("help,h", "display help")
-		("version,v", "display version")
-		("steady,s", "compute steady states")
-		;
-	bpo::options_description invisible;
-	invisible.add_options()
-		("model", bpo::value<string>()->required(), ("file holding the model, must have " + MODEL_EXTENSION + " suffix").c_str())
-		;
-	bpo::options_description all;
-	all.add(visible).add(invisible);
-	bpo::positional_options_description pos_decr; pos_decr.add("model", 1);
-	
-	bpo::store(bpo::command_line_parser(argc, argv).options(all).positional(pos_decr).run(), result);
-	bpo::notify(result);
-
-	if (result.count("help")) {
-		cout << visible << "\n";
-		exit(0);
-	}
-
-	if (result.count("version")) {
-		cout << "Version 0.0.0.0" << "\n";
-		exit(0);
-	}
-
-	return result;
-}
+#include "general/program_options.hpp"
 
 void testPath(const bfs::path & path) {
 	if (!bfs::exists(path))
 		throw runtime_error("file does not exist");
 	bfs::path model_extension = path.extension();
-	if (model_extension.string().compare(MODEL_EXTENSION) != 0)
+	if (model_extension.string() != MODEL_EXTENSION)
 		throw runtime_error("suffix must be " + MODEL_EXTENSION);
 }
 
@@ -71,6 +37,8 @@ SpaceSolver<SpaceType> initiateSolver(const Model & model) {
 }
 
 int main(int argc, char ** argv) {
+	cout << "INF: " << numeric_limits<size_t>::has_infinity;
+
 	bpo::variables_map program_options;
 	string path_to_model;
 	try {
@@ -94,6 +62,7 @@ int main(int argc, char ** argv) {
 		model.species.resize(model_content.size());
 		rng::transform(model_content, model.species.begin(), ModelParsers::obtainSpecie);
 		ModelParsers::control_semantics(model.species);
+		rng::sort(model.species, [](const Specie & a, const Specie & b){return a.name < b.name; });
 
 		model.max_value = rng::max_element(model.species, [](Specie & a, Specie & b) {return a.max_val < b.max_val; })->max_val;
 	}
@@ -111,16 +80,18 @@ int main(int argc, char ** argv) {
 			output_file << endl;
 
 			auto solver = initiateSolver<SteadySpace>(model);
-			vector<int> result;
-			while (!(result = solver.next()).empty()) {
+			solver->applyModel(model);
+			vector<int> result = solver.next();
+			while (!result.empty()) {
 				rng::for_each(result, [&output_file](int i){output_file << i << ","; });
 				output_file << endl;
+				result = solver.next();
 			}
 		}
 	}
 	catch (exception & e) {
 		BOOST_LOG_TRIVIAL(error) << "An exception occurred while computing the steady states: " << e.what();
-		exit(2);
+		exit(3);
 	}
 
 

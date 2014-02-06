@@ -1,9 +1,56 @@
 #include "../general/definitions.hpp"
+#include "../model/model_parsers.hpp"
 #include "basic_space.hpp"
 
 #pragma once
 
 class SteadySpace : public Gecode::Space, public BasicSpace<int> {
+	vector<int> getNumbers(string set) {
+		// If no numbers are specified, return 1 by defaults
+		if (set.empty())
+			return { 1 };
+		vector<string> parsed = getAllMatches("\\d+", set);
+		vector<int> result(parsed.size());
+		rng::transform(parsed, result.begin(), [](const string & str){return stoi(str); });
+		return result;
+	}
+
+	Gecode::LinIntExpr convertLiteral(const Model & model, const string & ext_literal, const int max_val) {
+		smatch matches;
+		regex_search(ext_literal, matches, regex(ModelParsers::spec_name_form));
+		int spec_no = model.findIndex(matches[0].str());
+		auto numbers = getNumbers(matches.suffix().str());
+		Gecode::BoolExpr lit_present{ species[spec_no] == numbers[0] };
+		for_each(numbers.begin() + 1, numbers.end(), [&lit_present, this, spec_no](const int n) {
+			lit_present = lit_present && this->species[spec_no] == n;
+		});
+		return Gecode::LinIntExpr{ Gecode::ite(lit_present, max_val, 0) };
+	}
+
+
+	Gecode::LinIntExpr convertClause(const Model & model, const string & clause, const int max_val) {
+		vector<string> literals;
+		boost::split(literals, clause, boost::is_any_of("*"));
+		int multiplier = regex_match(literals[0], regex("\\d")) ? stoi(literals[0]) : -1;
+		auto first_ext_literal = multiplier == -1 ? literals.begin() : literals.begin() + 1;
+		vector<Gecode::LinIntExpr> exprs(distance(first_ext_literal, literals.end()));
+		transform(first_ext_literal, literals.end(), exprs.begin(), [&model, max_val, this](const string & ext_literal){
+			return this->convertLiteral(model, ext_literal, max_val); 
+		});
+		if (multiplier != -1) {
+			exprs.emplace_back(Gecode::LinIntExpr(multiplier));
+		}
+		if (exprs.size() == 1) {
+			return exprs[0];
+		}
+		else {
+			Gecode::LinIntExpr result(Gecode::min(exprs[0], exprs[1]));
+			for (const size_t i : crange(2u, exprs.size())) 
+				result = Gecode::min(result, exprs[i]);
+			return result;
+		}
+	}
+
 protected:
 	Gecode::IntVarArray species; // Holds the actual values we are looking for
 
@@ -37,5 +84,28 @@ public:
 	void print() const {
 		for (int i = 0; i < species.size(); i++)
 			cout << species[i].val() << ' ';
+	}
+
+	void applyModel(const Model & model) {
+		for (const size_t i : cscope(model.species)) {
+			const Specie & specie = model.species[i];
+
+			vector<string> clauses;
+			boost::split(clauses, specie.rule, boost::is_any_of("+"));
+
+			vector<Gecode::LinIntExpr> exprs(clauses.size());
+			rng::transform(clauses, exprs.begin(), [&model, &specie, this](const string & clause){return this->convertClause(model, clause, specie.max_val); });
+			
+			Gecode::LinIntExpr rule;
+			if (exprs.size() == 1) {
+				rule = exprs[0];
+			}
+			else {
+				rule = (Gecode::max(exprs[0], exprs[1]));
+				for (const size_t i : crange(2u, exprs.size()))
+					rule = Gecode::max(rule, exprs[i]);
+			}
+			Gecode::rel(*this, species[i] == rule);
+		}
 	}
 };

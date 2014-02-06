@@ -14,5 +14,12 @@ struct Model {
 	string name; ///< Name of the model, based on the model path.
 	int max_value; ///< Maximal values any specie can attain.
 	vector<Specie> species; ///< All the species and their related rules.
+
+	size_t findIndex(const string & name) const {
+		for (const size_t i : cscope(species))
+			if (species[i].name == name)
+				return i;
+		return INF;
+	}
 };
 

@@ -27,12 +27,7 @@ namespace ModelParsers {
 		int result = numeric_limits<int>::min();
 
 		// Find all the numbers
-		smatch clause_matches;
-		vector<string> string_literals;
-		while (regex_search(line, clause_matches, regex(num_literal_form))) {
-			string_literals.emplace_back(clause_matches[1]); // Capture the first (and only) submatch that holds the whole number only
-			line = clause_matches.suffix().str();
-		}
+		vector<string> string_literals = getAllMatches(num_literal_form, line, 1);
 		// The default value is 1 (no numbers found)
 		if (string_literals.empty())
 			return 1;
@@ -57,7 +52,7 @@ namespace ModelParsers {
 	 * @param required_specie	name of the specie that is being searched for.
 	 */
 	const Specie& testName(const vector<Specie> & species, const string & required_specie) {
-		auto tested = rng::find_if(species, [&required_specie](const Specie & spec) {return spec.name.compare(required_specie) == 0; });
+		auto tested = rng::find_if(species, [&required_specie](const Specie & spec) {return spec.name == required_specie; });
 		if (tested == species.end())
 			throw runtime_error("Specie \"" + required_specie + "\" not found on the left side.");
 		else
