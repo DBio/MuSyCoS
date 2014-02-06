@@ -27,5 +27,3 @@ using namespace std;
 
 const string MODEL_EXTENSION(".pasn"); ///< Post's algebra network
 const size_t INF = numeric_limits<size_t>::max();
-
-typedef int(*StoiType)(const std::string&, std::size_t*, int);

@@ -4,16 +4,10 @@
 #include "constraints/space_solver.hpp"
 #include "general/program_options.hpp"
 
-/* Turn the model file into a model object. */
-Model parseModel(const string & path_to_model) {
+/* Create a model object from vector of string represented rules */
+Model parseModel(const vector<string> & model_content) {
 	Model result;
-	// Parse the file path
-	bfs::path model_path(path_to_model);
-	ModelParsers::testPath(model_path);
-	result.name = model_path.stem().string();
-	// Read the file and control its syntax
-	vector<string> model_content = ModelParsers::readModel(model_path);
-	rng::sort(model_content);
+
 	ModelParsers::control_syntax(model_content);
 	// Translate the into a model and control semantics of the rules
 	result.species.resize(model_content.size());
@@ -22,6 +16,19 @@ Model parseModel(const string & path_to_model) {
 	// Get the global maximum
 	result.max_value = rng::max_element(result.species, [](Specie & a, Specie & b) {return a.max_val < b.max_val; })->max_val;
 
+	return result;
+}
+
+/* Turn the model file into a model object. */
+Model obtainModel(const string & path_to_model) {
+	// Control the file path
+	bfs::path model_path(path_to_model);
+	ModelParsers::testPath(model_path);
+	// Read the file and control its syntax
+	auto model_content = ModelParsers::readModel(model_path);
+	rng::sort(model_content);
+	Model result = parseModel(model_content);
+	result.name = model_path.stem().string();
 	return result;
 }
 
@@ -61,7 +68,7 @@ int main(int argc, char ** argv) {
 	
 	Model model;
 	try {
-		model = parseModel(path_to_model);
+		model = obtainModel(path_to_model);
 	}
 	catch (exception & e) {
 		BOOST_LOG_TRIVIAL(error) << "An exception occurred while reading the model file \"" << path_to_model << "\":" << e.what();

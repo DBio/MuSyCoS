@@ -15,7 +15,7 @@ class SteadySpace : public Gecode::Space, public BasicSpace<int> {
 		// Else get all the numbers in the set and return them as integers
 		vector<string> parsed = getAllMatches("\\d+", set);
 		vector<int> result(parsed.size());
-		rng::transform(parsed, result.begin(), static_cast<StoiType>(&stoi));
+		rng::transform(parsed, result.begin(), boost::lexical_cast<int, string>);
 		return result;
 	}
 
@@ -58,11 +58,12 @@ class SteadySpace : public Gecode::Space, public BasicSpace<int> {
 		int num_literal = regex_match(literals[0], regex("\\d")) ? stoi(literals[0]) : -1;
 		vector<LNE> exprs(literals.size());
 		// Convert all literals except possibly the first one which may be a number
-		transform(literals.begin() + (num_literal == -1 ? 1 : 0), literals.end(), exprs.begin(), [&model, max_val, this](const string & ext_literal){
+		transform(literals.begin() + (num_literal != -1 ? 1 : 0), literals.end(), exprs.begin(), [&model, max_val, this](const string & ext_literal){
 			return this->convertLiteral(model, ext_literal, max_val); 
 		});
 		// Place back the numeric literal if there is one
-		if (num_literal != -1) exprs.back = LNE(num_literal);
+		if (num_literal != -1)
+			exprs.back() = LNE(num_literal);
 
 		return applyOnSet(exprs, Gecode::min);
 	}
@@ -113,6 +114,7 @@ public:
 
 			vector<LNE> exprs(clauses.size());
 			rng::transform(clauses, exprs.begin(), [&model, &specie, this](const string & clause){return this->convertClause(model, clause, specie.max_val); });
+			
 			Gecode::rel(*this, species[i] == applyOnSet(exprs, Gecode::max));
 		}
 	}
