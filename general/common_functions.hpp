@@ -89,7 +89,9 @@ namespace CommonFunctions {
 	*/
 	template<typename ContainerType>
 	bool iterate(const ContainerType & top, const ContainerType & bottom, ContainerType & iterated) {
-		for (size_t val_num = iterated.size(); val_num > 0; val_num--) {
+		for (size_t val_num = iterated.size(); val_num >= 0; val_num--) {
+			if (val_num == 0)
+				return false;
 			if (iterated[val_num - 1] == top[val_num - 1]) {
 				iterated[val_num - 1] = bottom[val_num - 1];
 			}

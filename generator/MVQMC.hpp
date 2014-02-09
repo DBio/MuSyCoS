@@ -6,7 +6,7 @@ namespace MVQMC {
 		PMin result;
 
 		vector<bool> different(a.size());
-		rng::transform(a, b, different.begin(), equal_to<PMin>()); // Get true if the vectors of values are equal
+		rng::transform(a, b, different.begin(), equal_to<vector<int> >()); // Get true if the vectors of values are equal
 		const size_t diff_count = rng::count(different, true);
 		if (diff_count == 0) {
 			throw runtime_error("Trying to merge duplicated vectors.");
@@ -14,7 +14,7 @@ namespace MVQMC {
 		if (diff_count == 1) {
 			result = a;
 			size_t diff_position = distance(different.begin(), rng::find(different, true));
-			rng::set_difference(a[diff_position], b[diff_position], inserter(result, result.end()));
+			rng::set_difference(a[diff_position], b[diff_position], inserter(result[diff_position], result[diff_position].end()));
 		}
 
 		return result;
@@ -53,6 +53,7 @@ namespace MVQMC {
 			for (const int i : member) result.emplace_back(PLit{ i });
 			return result;
 		});
+		return current;
 
 		// Make compact
 		vector<PMin> compacted;

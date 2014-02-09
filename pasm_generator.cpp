@@ -22,17 +22,17 @@ vector<Object> pickK(vector<Object> & set, const int k) {
 	if (k > set.size())
 		throw runtime_error("Trying to get k different numbers out of n, but k > n");
 	rng::random_shuffle(set);
-	return { set.begin(), set.begin() + k };
+	return vector<Object>(set.begin(), set.begin() + k);
 }
 
 /* Distribute the conformations on j inputs in between l vectors for values */
 vector<vector<vector<int> > > distributeConditions(const int j, const int l) {
 	vector<vector<vector<int> > > result(l);
 
-	default_random_engine de;
+	random_device rd;
 	vector<int> current(j, 0), min(j, 0), max(j, l - 1);
 	do {
-		result[de() % l].emplace_back(current);
+		result[rd() % l].emplace_back(current);
 	} while (iterate(max, min, current));
 
 	return result;
@@ -76,7 +76,7 @@ string createLine(const vector<string> & names, const size_t target, const vecto
 		});
 	});
 
-	return result.substr(result.size() - 1);
+	return result.substr(0, result.size() - 1);
 }
 
 int main(int argc, char ** argv) {
