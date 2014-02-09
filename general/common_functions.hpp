@@ -71,14 +71,14 @@ namespace CommonFunctions {
 	* @param[in,out] val  reference to value that will be increased
 	*/
 	template<typename IntegralType>
-	void increase(typename std::vector<IntegralType>::reference val) { val++; }
+	void increase(IntegralType & val) { val++; }
 
 	/**
 	* @brief Sets boolean value to true.
 	* @param[in,out] val  reference to value that will be increased
 	*/
 	template<>
-	void increase<bool>(std::vector<bool>::reference val) { val = true; }
+	void increase<bool>(bool & val) { val = true; }
 
 	/**
 	* @brief Iterates values from left to right if it is possible. If so, return true, otherwise return false.
@@ -87,16 +87,14 @@ namespace CommonFunctions {
 	* @param[in,out] iterated    vector of values to iterate
 	* @return  true if the iteration was valid, false if it caused overflow (iterated > bottom)
 	*/
-	template<typename IntegralType>
-	bool iterate(const std::vector<IntegralType> & top, const std::vector<IntegralType> & bottom, std::vector<IntegralType> & iterated) {
-		for (size_t val_num = 0; val_num <= iterated.size(); val_num++) {
-			if (val_num == iterated.size())
-				return false;
-			if (iterated[val_num] == top[val_num]) {
-				iterated[val_num] = bottom[val_num];
+	template<typename ContainerType>
+	bool iterate(const ContainerType & top, const ContainerType & bottom, ContainerType & iterated) {
+		for (size_t val_num = iterated.size(); val_num > 0; val_num--) {
+			if (iterated[val_num - 1] == top[val_num - 1]) {
+				iterated[val_num - 1] = bottom[val_num - 1];
 			}
 			else {
-				increase<IntegralType>(iterated[val_num]);
+				increase<decltype(iterated[val_num - 1])>(iterated[val_num - 1]);
 				break;
 			}
 		}
