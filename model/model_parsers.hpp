@@ -17,9 +17,16 @@ namespace ModelParsers {
 	/* Throw an exception if the model has syntactical errors. */
 	void control_syntax(const vector<string> & lines) {
 		regex control{ line_form };
-		for (const size_t i : crange(0u, lines.size())) 
-			if (!regex_match(lines[i], control))
-				throw runtime_error("Line " + to_string(i) + ": invalid format \"" + lines[i] + "\"");
+		for (const size_t i : crange(0u, lines.size())) {
+			try {
+				if (!regex_match(lines[i], control))
+					throw runtime_error("Line " + to_string(i) + ": invalid format \"" + lines[i] + "\"");
+			}
+			catch (std::regex_error& e) {
+				BOOST_LOG_TRIVIAL(error) << "A regex error : " << e.what() << " occured while resolving expression on the line: "
+					<< i << ". Warning: the syntaxt of this line was not checked.";
+			}
+		}
 	}
 	
 	/* Obtain a literal with maximal value on the right hand side of the rule  */
@@ -72,14 +79,21 @@ namespace ModelParsers {
 	/* Throw an exception if the model has semantical error (the specie names or their values are not right) */
 	void control_semantics(const vector<Specie> & species) {
 		for (const Specie specie : species) {
-			string specie_rule = specie.rule;
-			smatch match_clauses;
-			while (regex_search(specie_rule, match_clauses, regex(ext_literal_form))) {
-				Specie tested = testName(species, match_clauses[1]);
-				testValues(tested, match_clauses[2]);
-				specie_rule = match_clauses.suffix().str();
+			try {
+				string specie_rule = specie.rule;
+				smatch match_clauses;
+				while (regex_search(specie_rule, match_clauses, regex(ext_literal_form))) {
+					Specie tested = testName(species, match_clauses[1]);
+					// testValues(tested, match_clauses[2]);
+					specie_rule = match_clauses.suffix().str();
+				}
+			}
+			catch (regex_error & e) {
+				BOOST_LOG_TRIVIAL(error) << "A regex error : " << e.what() << " occured while controlling the semantics for specie: "
+					<< specie.name << ". Warning: the semantics of rules for this specie were not checked.";
 			}
 		}
+		
 	}
 
 	/* Throw an exception if the specified model file either does not exist or does not have the required suffix. */

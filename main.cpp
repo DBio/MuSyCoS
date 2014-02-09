@@ -38,7 +38,9 @@ void solveSteadyStates(const string & path_to_model, const Model & model) {
 	bfs::path model_path(path_to_model);
 	string output_file_name = model_path.parent_path().string() + model.name + "_stable.csv";
 	ofstream output_file(output_file_name, ios::out);
-	rng::for_each(model.species, [&output_file](Specie spec){output_file << spec.name << ","; });
+	string species;
+	rng::for_each(model.species, [&species](Specie spec){species += spec.name + ","; });
+	output_file << species.substr(0, species.size() - 1);
 	// Create the solver together with the constraints
 	SpaceSolver<SteadySpace> solver(new SteadySpace(model.species.size(), model.max_value));
 	for (const size_t i : cscope(model.species))
@@ -48,7 +50,9 @@ void solveSteadyStates(const string & path_to_model, const Model & model) {
 	vector<int> result = solver.next();
 	while (!result.empty()) {
 		output_file << endl;
-		rng::for_each(result, [&output_file](int i){output_file << i << ","; });
+		string line;
+		rng::for_each(result, [&line](int i){line += to_string(i) + ","; });
+		output_file << line.substr(0, line.size() - 1);
 		result = solver.next();
 	}
 }

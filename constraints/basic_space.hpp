@@ -73,7 +73,7 @@ protected:
 	}
 
 	/* Take a Post algebra rule in the DNF and convert it into a Gecode expression */
-	LNE convertRule(const Gecode::IntVarArray & spec_vars, const const Model & model, const Specie & specie) {
+	LNE convertRule(const Gecode::IntVarArray & spec_vars, const Model & model, const Specie & specie) {
 		vector<string> clauses;
 		boost::split(clauses, specie.rule, boost::is_any_of("+"));
 

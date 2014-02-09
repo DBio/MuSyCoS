@@ -68,7 +68,7 @@ string textMinterm(const int val, const PMin & pmin, const vector<string> & name
 string createLine(const vector<string> & names, const size_t target, const vector<size_t> & sources, map<int, vector<PMin> > & conditions) {
 	string result;
 
-	result = names[target] + "'=";
+	result = names[target] + "'=0*" + names[target] + "+";
 	rng::for_each(conditions, [&names, &sources, &result](const pair<int, vector<PMin>> & condition){
 		const int val = condition.first;
 		rng::for_each(condition.second, [&names, &sources, &result, &val](const PMin & pmin) {
@@ -100,7 +100,7 @@ int main(int argc, char ** argv) {
 		size_t spec_no = 0;
 		vector<size_t> regulators(names.size());
 		rng::generate(regulators, [&spec_no]{return spec_no++; });
-		fstream fout("model_" + to_string(m) + "_" + to_string(j) + "_" + to_string(l) + ".pasm", ios::out);
+		fstream fout("model_" + to_string(m) + "_" + to_string(j) + "_" + to_string(l) + MODEL_EXTENSION, ios::out);
 
 		for (const size_t spec_id : cscope(names)) {
 			auto sources = pickK(regulators, j);

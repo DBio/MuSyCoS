@@ -16,7 +16,7 @@ bpo::variables_map parseProgramOptions(int argc, char ** argv) {
 		;
 	bpo::options_description invisible;
 	invisible.add_options()
-		("model", bpo::value<string>(), ("file holding the model, must have " + MODEL_EXTENSION + " suffix").c_str())
+		("model", bpo::value<string>()->required(), ("file holding the model, must have " + MODEL_EXTENSION + " suffix").c_str())
 		;
 	bpo::options_description all;
 	all.add(visible).add(invisible);

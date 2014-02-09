@@ -61,6 +61,8 @@ namespace MVQMC {
 			return result;
 		});
 
+		return current;
+
 		// Make compact
 		vector<PMin> compacted;
 		do {
