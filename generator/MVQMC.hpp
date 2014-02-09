@@ -6,7 +6,7 @@ namespace MVQMC {
 		PMin result;
 
 		vector<bool> different(a.size());
-		rng::transform(a, b, different.begin(), equal_to<vector<int> >()); // Get true if the vectors of values are equal
+		rng::transform(a, b, different.begin(), not_equal_to<vector<int> >()); // Get true if the vectors of values are equal
 		const size_t diff_count = rng::count(different, true);
 		if (diff_count == 0) {
 			throw runtime_error("Trying to merge duplicated vectors.");
@@ -14,7 +14,8 @@ namespace MVQMC {
 		if (diff_count == 1) {
 			result = a;
 			size_t diff_position = distance(different.begin(), rng::find(different, true));
-			rng::set_difference(a[diff_position], b[diff_position], inserter(result[diff_position], result[diff_position].end()));
+			rng::set_difference(b[diff_position], a[diff_position], inserter(result[diff_position], result[diff_position].end()));
+			rng::sort(result[diff_position]);
 		}
 
 		return result;
@@ -23,22 +24,28 @@ namespace MVQMC {
 	/* Return a vector of combinations of the next order. Those who were not possible to merge are left in the reference to input. */
 	vector<PMin> next_merge(vector<PMin> & original) {
 		vector<PMin> compacted;
-		vector<PMin> leftovers;
+		vector<bool> success(original.size(), false);
 
 		for (auto it1 = original.begin(); it1 != original.end(); it1++) {
-			bool success = false;
 			for (auto it2 = it1 + 1; it2 != original.end(); it2++) {
 				PMin combined = combine(*it1, *it2);
 				if (!combined.empty()) {
-					success = false;
-					compacted.emplace_back(combined);
+					if (rng::find(compacted, (combined)) == compacted.end())
+						compacted.emplace_back(combined);
+					success[distance(original.begin(), it1)] = true;
+					success[distance(original.begin(), it2)] = true;
 				}
 			}
-			if (!success)
-				leftovers.emplace_back(*it1);
 		}
 
-		original = leftovers;
+		// Replace the original vector with the leftovers
+		vector<PMin> leftovers;
+		for (const size_t i : cscope(original))
+			if (!success[i])
+				leftovers.emplace_back(original[i]);
+		original.resize(leftovers.size());
+		rng::copy(leftovers, original.begin());
+
 		return compacted;
 	}
 
@@ -53,14 +60,13 @@ namespace MVQMC {
 			for (const int i : member) result.emplace_back(PLit{ i });
 			return result;
 		});
-		return current;
 
 		// Make compact
 		vector<PMin> compacted;
 		do {
 			compacted = next_merge(current);
 			rng::copy(current, inserter(result, result.end()));
-			current = { compacted.begin(), unique(compacted.begin(), compacted.end()) };
+			current = compacted;
 		} while (!compacted.empty());
 
 		return result;
