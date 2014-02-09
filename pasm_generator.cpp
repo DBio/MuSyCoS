@@ -100,7 +100,7 @@ int main(int argc, char ** argv) {
 		size_t spec_no = 0;
 		vector<size_t> regulators(names.size());
 		rng::generate(regulators, [&spec_no]{return spec_no++; });
-		fstream fout("model_" + to_string(m) + "_" + to_string(j) + "_" + to_string(l), ios::out);
+		fstream fout("model_" + to_string(m) + "_" + to_string(j) + "_" + to_string(l) + ".pasm", ios::out);
 
 		for (const size_t spec_id : cscope(names)) {
 			auto sources = pickK(regulators, j);
