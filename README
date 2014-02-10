@@ -1,0 +1,38 @@
+MuSyCoS (Multivalued Synchronous Networks Constraint Solver )
+Copyright (c) 2014 - Adam Streck
+Discrete Biomathematics, Freie Universitat, Berlin ( http://www.mi.fu-berlin.de/en/math/groups/dibimath )
+open-source 2014, licensed as GNU GPL v3
+
+Requirements:
+	MVC November 2013, possibly GCC v4.9.0 or newer
+	Gecode constraint solver (http://www.gecode.org/)
+	Boost headers version 1.47 or newer. (http://www.boost.org/)
+	Google test library for the test project (https://code.google.com/p/googletest/)
+
+Building:
+	generator.cpp:
+		compile for the generator of random .pasn models
+		link with boost-filesystem, boost-program_options
+	main.cpp
+		compile for the MuSyCoS tool
+		link with: gecode-kernel, gecode-int, gecode-minimodel, boost-filesystem, boost-program_options
+	test.cpp
+		compile for the tests of MuSyCoS
+		link with: gecode-kernel, gecode-int, gecode-minimodel, google-test, google-test-main
+	
+Execution:
+	generator.cpp k j l [-svh]
+		m: number of species in the model
+		j: number of regulators per specie
+		l: size of the domain (each specie can attain value from the set {0,..,j-1})
+		
+	main file.pasn [-svh]
+		file.pasn: input mode file in the .pasn format
+		s: compute steady statates, for "file.pasn" these are written to the "file_stable.csv"
+		
+Pasn format:
+	example: A'=B{0,3}+A{1}*B{2} is a 4-valued model
+	where B{0,3} takes value 4 iff (B==0 or B==3) and 0 otherwise
+	+ is max
+	* is min
+	

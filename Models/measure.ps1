@@ -1,6 +1,6 @@
 $sizes = (8,16,32,64,128,256,512)
-$degrees = (4)
-$dims = (4)
+$degrees = (3)
+$dims = (2)
 foreach($size in $sizes) {
 	foreach($degree in $degrees) {
 		foreach($dim in $dims) {

@@ -1,5 +1,5 @@
 #include "generator/generator_defs.hpp"
-#include "generator/generator_parser.hpp"
+#include "generator/generator_opts.hpp"
 #include "generator/MVQMC.hpp"
 
 /* Generate unique names for k species. */

@@ -1,5 +1,13 @@
+/*
+ * Copyright (c) 2014 - Adam Streck 
+ * MuSyCoS - Multivalued Synchronous Networks Constraint Solver 
+ * MuSyCoS is a free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3. 
+ * MuSyCoS is released without any warranty. See the GNU General Public License for more details. <http://www.gnu.org/licenses/>. 
+ * For affiliations see <http://www.mi.fu-berlin.de/en/math/groups/dibimath> 
+ */
 #include "model/model.hpp"
 #include "model/model_parsers.hpp"
+#include "model/output.hpp"
 #include "constraints/steady_space.hpp"
 #include "constraints/space_solver.hpp"
 #include "general/program_options.hpp"
@@ -32,29 +40,19 @@ Model obtainModel(const string & path_to_model) {
 	return result;
 }
 
+
 /* Create a steady state solver, solve the constraints. */
 void solveSteadyStates(const string & path_to_model, const Model & model) {
 	// Create the output file and label columns
-	bfs::path model_path(path_to_model);
-	string output_file_name = model_path.parent_path().string() + model.name + "_stable.csv";
-	ofstream output_file(output_file_name, ios::out);
-	string species;
-	rng::for_each(model.species, [&species](Specie spec){species += spec.name + ","; });
-	output_file << species.substr(0, species.size() - 1);
+	ofstream output_file = initFile(path_to_model, model.name);
+	outputLegend(model.species, output_file);
 	// Create the solver together with the constraints
 	SpaceSolver<SteadySpace> solver(new SteadySpace(model.species.size(), model.max_value));
 	for (const size_t i : cscope(model.species))
 		solver->boundSpecie(i, model.species[i].max_val);
 	solver->applyModel(model);
 	// Output the results
-	vector<int> result = solver.next();
-	while (!result.empty()) {
-		output_file << endl;
-		string line;
-		rng::for_each(result, [&line](int i){line += to_string(i) + ","; });
-		output_file << line.substr(0, line.size() - 1);
-		result = solver.next();
-	}
+	outputResults(output_file, solver);
 }
 
 int main(int argc, char ** argv) {
